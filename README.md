@@ -2,7 +2,7 @@
 
 Code (in Matlab and R) to perform a spherical rotation (permutation) of a parcellated cortical map. 
 
-For details on this specific implementation of the code, see the Váša et al. Cerebral Cortex manuscript referenced below; and in particular the supplementary information section "Spatial permutation test".
+For details on this specific implementation of the code, see the Váša et al. *Cerebral Cortex* manuscript referenced below; and in particular the supplementary information section "Spatial permutation test".
 
 ## References
 
