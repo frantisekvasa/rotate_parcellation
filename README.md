@@ -2,6 +2,8 @@
 
 Code (in Matlab and R) to perform a spherical rotation (permutation) of a parcellated cortical map. 
 
+Includes coordinates on the Freesurfer sphere of 360 regions from the Glasser et al. *Nature* 2016 HCP parcellation.
+
 For details on this specific implementation of the code, see the Váša et al. *Cerebral Cortex* manuscript referenced below; and in particular the supplementary information section "Spatial permutation test".
 
 ## References
