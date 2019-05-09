@@ -2,6 +2,8 @@
 % Freesurfer sphere, for subsequent input to code for the performance of a
 % spherical permutation. Runs on individual hemispheres.
 %
+% Requires read_surf.m and read_annotation.m functions, distributed with Freesurfer (Applications > freesurfer > matlab).
+%
 % Inputs:
 % path_sphere   path to the Fressurfer .annot file describing coordinates
 %               of each vertex on the sphere
