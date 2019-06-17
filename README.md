@@ -24,7 +24,7 @@ For specific instructions, see the code.
 
 ![Spherical permutation example](/spherical_permutation_example.png)
 
-The spatial permutation test was applied three times to cortical maps of the x, y and z coordinates of regional centroids in MNI space. The spatial contiguity and hemispheric symmetry is preserved within the permuted maps.
+*The spatial permutation test was applied three times to cortical maps of the x, y and z coordinates of regional centroids in MNI space. The spatial contiguity and hemispheric symmetry is preserved within the permuted maps.*
 
 ## References
 
