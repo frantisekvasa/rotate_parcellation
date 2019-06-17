@@ -1,5 +1,7 @@
 # Spherical rotation (permutation) of a parcellated cortical map
 
+**Note**: It has been brought to my attention that the permutation approach implemented here is biased, and does not uniformly sample the space of permutations on the sphere. For details, see description and references within the document "technical_note_18July2018.docx" at https://github.com/spin-test/spin-test. Until the code provided here has been updated to correct this, please use with caution.
+
 Code (in Matlab and R) to perform a spherical rotation (permutation) of a parcellated cortical map. 
 
 Includes coordinates on the Freesurfer sphere of 360 regions from the Glasser et al. *Nature* 2016 HCP parcellation.
@@ -39,3 +41,5 @@ The same idea was subsequently explored in other papers.
 Finally, the idea was more formally discussed in the following paper, where the methods (for vertex-wise analyses) are made publicly available as well: 
 
   * Alexander-Bloch, A., Shou H., Liu, S., Satterthwaite, T. D., Glahn, D. C., Shinohara, R. T., Vandekar, S. N. and Raznahan, A. (2018). On testing for spatial correspondence between maps of human brain structure and function. *NeuroImage*, 178:540-551.
+  
+For code to perform spherical permutations at the vertex level, see https://github.com/spin-test/spin-test.
