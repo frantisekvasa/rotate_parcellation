@@ -1,6 +1,6 @@
 # Spherical rotation (permutation) of a parcellated cortical map
 
-**Note**: It has been brought to my attention that the permutation approach implemented here is biased, and does not uniformly sample the space of permutations on the sphere. For details, see description and references within the document "technical_note_18July2018.docx" at https://github.com/spin-test/spin-test. Until the code provided here has been updated to correct this, please use with caution.
+**Note**: *It has been brought to my attention that the permutation approach implemented here is biased, and does not uniformly sample the space of permutations on the sphere. For details, see description and references within the document "technical_note_18July2018.docx" at https://github.com/spin-test/spin-test. Until the code provided here has been updated to correct this, please use with caution.*
 
 Code (in Matlab and R) to perform a spherical rotation (permutation) of a parcellated cortical map. 
 
