@@ -41,9 +41,9 @@ while (r < nrot)
     
     % choose three angles at random - x, y, z
     % random angles
-    ax = pi; %2*pi*rand;
-    ay = pi/2; %2*pi*rand;
-    az = pi/4; %2*pi*rand;
+    ax = 2*pi*rand;
+    ay = 2*pi*rand;
+    az = 2*pi*rand;
     
     %%%% rotation matrices
     % left hemisphere
