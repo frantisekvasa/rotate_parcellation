@@ -1,14 +1,10 @@
 # Spherical rotation (permutation) of a parcellated cortical map
 
-**Note 2 | 5th September 2019**: *The matlab version of "rotate_parcellation" has been updated to uniformly sample the space of permutations on the sphere (see Note 1 below). The R function has not been updated as yet. Please use R versions of the code with caution.*
-
-**Note 1 | July 2019**: *I am grateful to Aaron Alexander-Bloch for recently (June 2019) bringing to my attention that the permutation approach implemented here is biased, and does not uniformly sample the space of permutations on the sphere. For details, see description and references within the document "technical_note_18July2018.docx" at https://github.com/spin-test/spin-test.*
-
-Code (in Matlab and R) to perform a spherical rotation (permutation) of a parcellated cortical map. 
+Code (in Matlab and R) to perform a spherical rotation (permutation) of a parcellated cortical map.
 
 Includes coordinates on the Freesurfer sphere of 360 regions from the Glasser et al. *Nature* 2016 HCP parcellation.
 
-For details on this specific implementation of the code, see the Váša et al. *Cerebral Cortex* manuscript referenced below; and in particular the supplementary information section "Spatial permutation test".
+For details, see the Váša et al. *Cerebral Cortex* manuscript referenced below; and in particular the supplementary information section "Spatial permutation test". The current implementation is an updated version of the scheme described in the *Cerebral Cortex* manuscript; see Notes below.
 
 ## Code
 
@@ -45,3 +41,11 @@ Finally, the idea was more formally discussed in the following paper, where the 
   * Alexander-Bloch, A., Shou H., Liu, S., Satterthwaite, T. D., Glahn, D. C., Shinohara, R. T., Vandekar, S. N. and Raznahan, A. (2018). On testing for spatial correspondence between maps of human brain structure and function. *NeuroImage*, 178:540-551.
   
 For code to perform spherical permutations at the vertex level, see https://github.com/spin-test/spin-test.
+
+---
+
+**Note 3 | 16th October 2019** *The R version of "rotate.parcellation" has now been updated to uniformly sample the space of permutations on the sphere.
+
+**Note 2 | 5th September 2019**: *The matlab version of "rotate_parcellation" has been updated to uniformly sample the space of permutations on the sphere (see Note 1 below). The R function has not been updated as yet. Please use R versions of the code with caution.*
+
+**Note 1 | July 2019**: *I am grateful to Aaron Alexander-Bloch for recently (June 2019) bringing to my attention that the permutation approach implemented here is biased, and does not uniformly sample the space of permutations on the sphere. For details, see description and references within the document "technical_note_18July2018.docx" at https://github.com/spin-test/spin-test.*
