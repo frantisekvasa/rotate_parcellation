@@ -6,7 +6,7 @@
 # Inputs:
 # coord.l       coordinates of left hemisphere regions on the sphere        array of size [n(LH regions) x 3]
 # coord.r       coordinates of right hemisphere regions on the sphere       array of size [n(RH regions) x 3]
-# nrot          number of rotations (default = 10000)                      scalar
+# nrot          number of rotations (default = 10000)                       scalar
 #
 # Output:
 # perm.id      array of permutations, from set of regions to itself        array of size [n(total regions) x nrot]
@@ -14,6 +14,8 @@
 # required library: matrixStats (for rowMins function)
 #
 # Frantisek Vasa, fv247@cam.ac.uk, June 2017 - July 2018
+#       Updated on 16/10/2019 with permutation scheme that uniformly samples the space of permutations on the sphere
+#       See github repo (@frantisekvasa) and references within for details
 
 rotate.parcellation = function(coord.l,coord.r,nrot=10000) {
   
@@ -33,48 +35,83 @@ rotate.parcellation = function(coord.l,coord.r,nrot=10000) {
   perm.id = array(0,dim=c(nroi,nrot)); # initialise output array
   r = 0; c = 0; # count successful (r) and unsuccessful (c) iterations
   
+  # UPDATED 16/10/2019 - set up updated permutation scheme 
+  I1 = diag(3); I1[1,1] = -1;
   # main loop -  use of "while" is to ensure any rotation that maps to itself is excluded (this is rare, but can happen)
   while (r < nrot) {
     
-    # choose three angles at random - x, y, z
-    # random angles
-    rm(.Random.seed, envir=globalenv()) # reset random seed
-    ax = 2*pi*runif(1)
-    ay = 2*pi*runif(1)
-    az = 2*pi*runif(1)
+    # UPDATED 16/10/2019
+    A = matrix(rnorm(9, mean = 0, sd = 1), nrow = 3, ncol = 3)
+    qrdec = qr(A)       # QR decomposition
+    TL = qr.Q(qrdec)    # Q matrix
+    temp = qr.R(qrdec)  # R matrix
+    TL = TL%*%diag(sign(diag(temp)))
+    if (det(TL)<0) {
+      TL[,1] = -TL[,1]
+    }
+    # reflect across the Y-Z plane for right hemisphere
+    TR = I1 %*% TL %*% I1;
+    coord.l.rot = coord.l %*% TL; # transformed (rotated) left coordinates
+    coord.r.rot = coord.r %*% TR; # transformed (rotated) right coordinates
     
-    ### rotation matrices
-    # left hemisphere
-    rx.l = cbind(c(1,0,0),c(0,cos(ax),sin(ax)),c(0,-sin(ax),cos(ax)))
-    ry.l = cbind(c(cos(ay),0,-sin(ay)),c(0,1,0),c(sin(ay),0,cos(ay)))
-    rz.l = cbind(c(cos(az),sin(az),0),c(-sin(az),cos(az),0),c(0,0,1))
-    # right hemisphere - same magnitude of rotation, but signs for y and z axes are flipped to retain symmetry
-    rx.r = cbind(c(1,0,0),c(0,cos(ax),sin(ax)),c(0,-sin(ax),cos(ax)))
-    ry.r = cbind(c(cos(-ay),0,-sin(-ay)),c(0,1,0),c(sin(-ay),0,cos(-ay)))
-    rz.r = cbind(c(cos(-az),sin(-az),0),c(-sin(-az),cos(-az),0),c(0,0,1))
+    # # rounding
+    # TL.round = round(TL,4)
+    # TR.round = I1 %*% TL.round %*% I1;
+    # coord.l %*% TL.round
+    # coord.r %*% TR.round
     
-    # perform rotation (mutiply coordinates by rotation matrices, for n-by-3 matrix)
-    # left hemisphere
-    coord.l.rot.x = coord.l %*% rx.l
-    coord.l.rot.xy = coord.l.rot.x %*% ry.l
-    coord.l.rot.xyz = coord.l.rot.xy %*% rz.l
-    # right hemisphere
-    coord.r.rot.x = coord.r %*% rx.r
-    coord.r.rot.xy = coord.r.rot.x %*% ry.r
-    coord.r.rot.xyz = coord.r.rot.xy %*% rz.r
+    # OLD PERMUTATION SCHEME - COMMENTED OUT 16/10/2019
+    # # choose three angles at random - x, y, z
+    # # random angles
+    # rm(.Random.seed, envir=globalenv()) # reset random seed
+    # ax = 2*pi*runif(1)
+    # ay = 2*pi*runif(1)
+    # az = 2*pi*runif(1)
+    # 
+    # ### rotation matrices
+    # # left hemisphere
+    # rx.l = cbind(c(1,0,0),c(0,cos(ax),sin(ax)),c(0,-sin(ax),cos(ax)))
+    # ry.l = cbind(c(cos(ay),0,-sin(ay)),c(0,1,0),c(sin(ay),0,cos(ay)))
+    # rz.l = cbind(c(cos(az),sin(az),0),c(-sin(az),cos(az),0),c(0,0,1))
+    # # right hemisphere - same magnitude of rotation, but signs for y and z axes are flipped to retain symmetry
+    # rx.r = cbind(c(1,0,0),c(0,cos(ax),sin(ax)),c(0,-sin(ax),cos(ax)))
+    # ry.r = cbind(c(cos(-ay),0,-sin(-ay)),c(0,1,0),c(sin(-ay),0,cos(-ay)))
+    # rz.r = cbind(c(cos(-az),sin(-az),0),c(-sin(-az),cos(-az),0),c(0,0,1))
+    # 
+    # # perform rotation (mutiply coordinates by rotation matrices, for n-by-3 matrix)
+    # # left hemisphere
+    # coord.l.rot.x = coord.l %*% rx.l
+    # coord.l.rot.xy = coord.l.rot.x %*% ry.l
+    # coord.l.rot.xyz = coord.l.rot.xy %*% rz.l
+    # # right hemisphere
+    # coord.r.rot.x = coord.r %*% rx.r
+    # coord.r.rot.xy = coord.r.rot.x %*% ry.r
+    # coord.r.rot.xyz = coord.r.rot.xy %*% rz.r
     
     # after rotation, find "best" match between rotated and unrotated coordinates
     # first, calculate distance between initial coordinates and rotated ones
     dist.l = array(0,dim=c(nroi.l,nroi.l));
     dist.r = array(0,dim=c(nroi.r,nroi.r));
+    # OLD PERMUTATION SCHEME - COMMENTED OUT 16/10/2019
+    # for (i in 1:nroi.l) { # left
+    #   for (j in 1:nroi.l) {
+    #     dist.l[i,j] = sqrt( sum( (coord.l[i,]-coord.l.rot.xyz[j,])^2 ) )
+    #   }
+    # }
+    # for (i in 1:nroi.r) { # right
+    #   for (j in 1:nroi.r) {
+    #     dist.r[i,j] = sqrt( sum( (coord.r[i,]-coord.r.rot.xyz[j,])^2 ) )
+    #   }
+    # }
+    # UPDATED 5/9/2019 - change of rotated variable name to "coord.l/r.rot" (from coord.l/r.rot.xyz)
     for (i in 1:nroi.l) { # left
       for (j in 1:nroi.l) {
-        dist.l[i,j] = sqrt( sum( (coord.l[i,]-coord.l.rot.xyz[j,])^2 ) )
+        dist.l[i,j] = sqrt( sum( (coord.l[i,]-coord.l.rot[j,])^2 ) )
       }
     }
     for (i in 1:nroi.r) { # right
       for (j in 1:nroi.r) {
-        dist.r[i,j] = sqrt( sum( (coord.r[i,]-coord.r.rot.xyz[j,])^2 ) )
+        dist.r[i,j] = sqrt( sum( (coord.r[i,]-coord.r.rot[j,])^2 ) )
       }
     }
     
@@ -134,7 +171,6 @@ rotate.parcellation = function(coord.l,coord.r,nrot=10000) {
       #save.image('~/Desktop/perm_error.RData')
       browser("permutation error")
     }
-    
     
     # verify that permutation does not map to itself
     if (!all(rot.lr.sort==c(1:nroi))) {
