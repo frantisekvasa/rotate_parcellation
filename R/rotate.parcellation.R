@@ -54,12 +54,6 @@ rotate.parcellation = function(coord.l,coord.r,nrot=10000) {
     coord.l.rot = coord.l %*% TL; # transformed (rotated) left coordinates
     coord.r.rot = coord.r %*% TR; # transformed (rotated) right coordinates
     
-    # # rounding
-    # TL.round = round(TL,4)
-    # TR.round = I1 %*% TL.round %*% I1;
-    # coord.l %*% TL.round
-    # coord.r %*% TR.round
-    
     # OLD PERMUTATION SCHEME - COMMENTED OUT 16/10/2019
     # # choose three angles at random - x, y, z
     # # random angles
