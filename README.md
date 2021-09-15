@@ -42,6 +42,8 @@ Finally, the idea was more formally discussed in the following paper, where the 
   
 For code to perform spherical permutations at the vertex level, see https://github.com/spin-test/spin-test.
 
+For an excellent **Python implementation**, see https://github.com/netneurolab/markello_spatialnulls and the associated manuscript [Comparing spatial null models for brain maps](https://www.sciencedirect.com/science/article/pii/S1053811921003293) by Ross Markello and Bratislav Misic.
+
 ---
 
 **Note 3 | 16th October 2019** *The R version of "rotate.parcellation" has now been updated to uniformly sample the space of permutations on the sphere.*
