@@ -46,6 +46,8 @@ For an excellent **Python implementation**, see https://github.com/netneurolab/m
 
 ---
 
+**Note 4 | 29th June 2023** *The R version of "rotate.parcellation" has now been updated to include a different permutation method; options include 'vasa' and 'hungarian' (default).*
+
 **Note 3 | 16th October 2019** *The R version of "rotate.parcellation" has now been updated to uniformly sample the space of permutations on the sphere.*
 
 **Note 2 | 5th September 2019**: *The matlab version of "rotate_parcellation" has been updated to uniformly sample the space of permutations on the sphere (see Note 1 below). The R function has not been updated as yet. Please use R versions of the code with caution.*
