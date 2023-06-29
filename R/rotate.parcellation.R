@@ -181,7 +181,7 @@ rotate.parcellation = function(coord.l,coord.r,nrot=10000,method='hungarian') {
     } else {
       
       # if an non-valid permutation method is used
-      print(paste('\'',method,'\' is not an accepted permutation method; valid options are \'vasa\' or \'hungarian\'',sep=''))
+      stop(paste('\'',method,'\' is not an accepted permutation method; valid options are \'vasa\' or \'hungarian\'',sep=''))
       
     } # end of method choice
     
