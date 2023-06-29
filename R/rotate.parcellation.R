@@ -7,17 +7,25 @@
 # coord.l       coordinates of left hemisphere regions on the sphere        array of size [n(LH regions) x 3]
 # coord.r       coordinates of right hemisphere regions on the sphere       array of size [n(RH regions) x 3]
 # nrot          number of rotations (default = 10000)                       scalar
+# method        method to match rotated and unrotated regions; options:     string; either 'vasa' or 'hungarian'
+#               'vasa' [faster / can be suboptimal] - for each unrotated region find closest rotated region (minimum), then assign the most distant pair (maximum of the minima)
+#               'hungarian' (default) [slower / optimal] - find the matching using the Hungarian algorithm
 #
 # Output:
 # perm.id      array of permutations, from set of regions to itself        array of size [n(total regions) x nrot]
 #
-# required library: matrixStats (for rowMins function)
-#
-# Frantisek Vasa, fv247@cam.ac.uk, June 2017 - July 2018
+# Frantisek Vasa, frantisek.vasa@kcl.ac.uk, June 2017 - June 2023
 #       Updated on 16/10/2019 with permutation scheme that uniformly samples the space of permutations on the sphere
+#       Updated on 5/5/2023 with Hungarian algorithm, and corresponding argument method='vasa' OR 'hungarian'
 #       See github repo (@frantisekvasa) and references within for details
 
-rotate.parcellation = function(coord.l,coord.r,nrot=10000) {
+# required libraries: 
+# matrixStats (for rowMins() function, used in method='vasa')
+# clue (for solve_LSAP() function, used in method='hungarian')
+library(matrixStats)
+library(clue)
+
+rotate.parcellation = function(coord.l,coord.r,nrot=10000,method='hungarian') {
   
   # check that coordinate dimensions are correct
   if (!all(dim(coord.l)[2]==3,dim(coord.r)[2]==3)) {
@@ -109,50 +117,73 @@ rotate.parcellation = function(coord.l,coord.r,nrot=10000) {
       }
     }
     
-    # LEFT
-    # calculate distances, proceed in order of "most distant minimum"
-    # -> for each unrotated region find closest rotated region (minimum), then assign the most distant pair (maximum of the minima), 
-    # as this region is the hardest to match and would only become harder as other regions are assigned
-    temp.dist.l = dist.l
-    rot.l = c(); ref.l = c();
-    #tba.r = tba.c = 1:nroi.l # rows and columns that are yet "to be assigned"
-    for (i in 1:nroi.l) {
-      # max(min) (described above)
-      ref.ix = which( rowMins(temp.dist.l,na.rm=T) == max(rowMins(temp.dist.l,na.rm=T),na.rm=T) )   # "furthest" row
-      rot.ix = which( temp.dist.l[ref.ix,] == min(temp.dist.l[ref.ix,],na.rm=T) ) # closest region
-      
-      # # alternative option: mean of row - take the closest match for unrotated region that is on average furthest from rotated regions
-      # ref.ix = which(nanmean(temp.dist.l,2)==nanmax(nanmean(temp.dist.l,2)))    # "furthest" row
-      # rot.ix = which(temp.dist.l(ref.ix,:)==nanmin(temp.dist.l(ref.ix,:)))      # closest region    
-      ref.l = c(ref.l,ref.ix) # store reference and rotated indices
-      rot.l = c(rot.l,rot.ix)
-      temp.dist.l[,rot.ix] = NA # set temporary column indices to NaN, to be disregarded in next iteration
-      temp.dist.l[ref.ix,] = 0 # because in the above form of the code, R doesn't deal well with whole rows and columns of NaN, set row to low value (which won't matter as furthest rows are assigned first)
-      #temp.dist.l[,rot.ix] = NA # set temporary indices to NaN, to be disregarded in next iteration
-      #temp.dist.l[ref.ix,] = NA
-    }
+    # UPDATED 5/5/2023
+    if (method == 'vasa') {
     
-    # RIGHT
-    # calculate distances, proceed in order of "most distant minimum"
-    # -> for each unrotated region find closest rotated region (minimum), then assign the most distant pair (maximum of the minima), 
-    # as this region is the hardest to match and would only become harder as other regions are assigned
-    temp.dist.r = dist.r;
-    rot.r = c(); ref.r = c();
-    for (i in 1:nroi.r) {
-      # max(min) (described above)
-      ref.ix = which( rowMins(temp.dist.r,na.rm=T) == max(rowMins(temp.dist.r,na.rm=T),na.rm=T) )   # "furthest" row
-      rot.ix = which( temp.dist.r[ref.ix,] == min(temp.dist.r[ref.ix,],na.rm=T) )             # closest region
+      # LEFT
+      # calculate distances, proceed in order of "most distant minimum"
+      # -> for each unrotated region find closest rotated region (minimum), then assign the most distant pair (maximum of the minima), 
+      # as this region is the hardest to match and would only become harder as other regions are assigned
+      temp.dist.l = dist.l
+      rot.l = c(); ref.l = c();
+      #tba.r = tba.c = 1:nroi.l # rows and columns that are yet "to be assigned"
+      for (i in 1:nroi.l) {
+        # max(min) (described above)
+        ref.ix = which( rowMins(temp.dist.l,na.rm=T) == max(rowMins(temp.dist.l,na.rm=T),na.rm=T) )   # "furthest" row
+        rot.ix = which( temp.dist.l[ref.ix,] == min(temp.dist.l[ref.ix,],na.rm=T) ) # closest region
+        
+        # # alternative option: mean of row - take the closest match for unrotated region that is on average furthest from rotated regions
+        # ref.ix = which(nanmean(temp.dist.l,2)==nanmax(nanmean(temp.dist.l,2)))    # "furthest" row
+        # rot.ix = which(temp.dist.l(ref.ix,:)==nanmin(temp.dist.l(ref.ix,:)))      # closest region    
+        ref.l = c(ref.l,ref.ix) # store reference and rotated indices
+        rot.l = c(rot.l,rot.ix)
+        temp.dist.l[,rot.ix] = NA # set temporary column indices to NaN, to be disregarded in next iteration
+        temp.dist.l[ref.ix,] = 0 # because in the above form of the code, R doesn't deal well with whole rows and columns of NaN, set row to low value (which won't matter as furthest rows are assigned first)
+        #temp.dist.l[,rot.ix] = NA # set temporary indices to NaN, to be disregarded in next iteration
+        #temp.dist.l[ref.ix,] = NA
+      }
       
-      # # alternative option: mean of row - take the closest match for unrotated region that is on average furthest from rotated regions
-      # ref.ix = which(nanmean(temp.dist.r,2)==nanmax(nanmean(temp.dist.r,2)))    # "furthest" row
-      # rot.ix = which(temp.dist.r(ref.ix,:)==nanmin(temp.dist.r(ref.ix,:)))      # closest region
-      ref.r = c(ref.r,ref.ix) # store reference and rotated indices
-      rot.r = c(rot.r,rot.ix)
-      temp.dist.r[,rot.ix] = NA # set temporary column indices to NaN, to be disregarded in next iteration
-      temp.dist.r[ref.ix,] = 0 # because in the above form of the code, R doesn't deal well with whole rows and columns of NaN, set row to low value (which won't matter as furthest rows are assigned first)
-      #temp.dist.l[,rot.ix] = NA # set temporary indices to NaN, to be disregarded in next iteration
-      #temp.dist.l[ref.ix,] = NA
-    }
+      # RIGHT
+      # calculate distances, proceed in order of "most distant minimum"
+      # -> for each unrotated region find closest rotated region (minimum), then assign the most distant pair (maximum of the minima), 
+      # as this region is the hardest to match and would only become harder as other regions are assigned
+      temp.dist.r = dist.r;
+      rot.r = c(); ref.r = c();
+      for (i in 1:nroi.r) {
+        # max(min) (described above)
+        ref.ix = which( rowMins(temp.dist.r,na.rm=T) == max(rowMins(temp.dist.r,na.rm=T),na.rm=T) )   # "furthest" row
+        rot.ix = which( temp.dist.r[ref.ix,] == min(temp.dist.r[ref.ix,],na.rm=T) )             # closest region
+        
+        # # alternative option: mean of row - take the closest match for unrotated region that is on average furthest from rotated regions
+        # ref.ix = which(nanmean(temp.dist.r,2)==nanmax(nanmean(temp.dist.r,2)))    # "furthest" row
+        # rot.ix = which(temp.dist.r(ref.ix,:)==nanmin(temp.dist.r(ref.ix,:)))      # closest region
+        ref.r = c(ref.r,ref.ix) # store reference and rotated indices
+        rot.r = c(rot.r,rot.ix)
+        temp.dist.r[,rot.ix] = NA # set temporary column indices to NaN, to be disregarded in next iteration
+        temp.dist.r[ref.ix,] = 0 # because in the above form of the code, R doesn't deal well with whole rows and columns of NaN, set row to low value (which won't matter as furthest rows are assigned first)
+        #temp.dist.l[,rot.ix] = NA # set temporary indices to NaN, to be disregarded in next iteration
+        #temp.dist.l[ref.ix,] = NA
+      }
+      
+    # UPDATED 5/5/2023
+    } else if (method == 'hungarian') {
+      
+      # solve_LSAP(), from library(clue): "Solve the linear sum assignment problem using the Hungarian method."
+      
+      # LEFT
+      rot.l = as.vector(solve_LSAP(dist.l, maximum=FALSE))
+      ref.l = c(1:nroi.l) # for compatibility with method='vasa'
+      
+      # RIGHT
+      rot.r = as.vector(solve_LSAP(dist.r, maximum=FALSE))
+      ref.r = c(1:nroi.r) # for compatibility with method='vasa'
+      
+    } else {
+      
+      # if an non-valid permutation method is used
+      print(paste('\'',method,'\' is not an accepted permutation method; valid options are \'vasa\' or \'hungarian\'',sep=''))
+      
+    } # end of method choice
     
     # mapping is x->y
     # collate vectors from both hemispheres + sort mapping according to "reference" vector
